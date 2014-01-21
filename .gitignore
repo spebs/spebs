@@ -1,2 +1,5 @@
 ws/*
 parameters.inc.php
+src/spebs-20110723.tar.gz
+src/spebs-20110724.tar.gz
+.gitignore

@@ -32,7 +32,7 @@
 //***************************************************************
 
 var jQ = jQuery.noConflict();
-jQ(document.getElementById("greecemap")).ready(function ()  
+jQ(document.getElementById("statsmap")).ready(function ()  
 {
 	initialize_map();
 });
@@ -93,7 +93,7 @@ jQ(document.getElementById("greecemap")).ready(function ()
 	var infohtml = null;
 	
 	var points_category = new Array();
-	var athmap;
+	var statsmap;
 	var steps = new Array();
 	
 	var curtime = "";
@@ -103,7 +103,7 @@ jQ(document.getElementById("greecemap")).ready(function ()
 	
 	function initialize_map() 
 	{
-      var comp,li,athmaptypes;
+      var comp,li,statsmaptypes;
 	  //if (GBrowserIsCompatible()) 
 	  //{
 		var mapOptions = 
@@ -118,18 +118,18 @@ jQ(document.getElementById("greecemap")).ready(function ()
 						  mapTypeId: google.maps.MapTypeId.ROADMAP
 						 };
 
-        athmap = new google.maps.Map(document.getElementById("greecemap"), mapOptions);
+        statsmap = new google.maps.Map(document.getElementById("statsmap"), mapOptions);
 
         if (areabounds != null)
 		{	
-			//athmap.fitBounds(areabounds);
-			athmap.setCenter(areabounds.getCenter());
-			athmap.setZoom(15);
+			//statsmap.fitBounds(areabounds);
+			statsmap.setCenter(areabounds.getCenter());
+			statsmap.setZoom(15);
 		}
 		else
-			athmap.setCenter(new google.maps.LatLng(globalview[0], globalview[1]), globalview[2]);
+			statsmap.setCenter(new google.maps.LatLng(globalview[0], globalview[1]), globalview[2]);
 		
-		google.maps.event.addListener(athmap,"zoomend", function(oldLevel,newLevel)
+		google.maps.event.addListener(statsmap,"zoomend", function(oldLevel,newLevel)
 					{
 						x=oldLevel+newLevel;
 						if ( x > 13)
@@ -139,10 +139,10 @@ jQ(document.getElementById("greecemap")).ready(function ()
 						}
 						zoomforce = false;
 					});
-		google.maps.event.addListener(athmap,"movestart",function(){curcenter = athmap.getCenter();});
-		google.maps.event.addListener(athmap,"moveend",function()
+		google.maps.event.addListener(statsmap,"movestart",function(){curcenter = statsmap.getCenter();});
+		google.maps.event.addListener(statsmap,"moveend",function()
 						{
-							if ((curcenter != null) && (!curcenter.equals(athmap.getCenter())))
+							if ((curcenter != null) && (!curcenter.equals(statsmap.getCenter())))
 								mapdragend();
 							curcenter = null;
 						});
@@ -183,14 +183,14 @@ jQ(document.getElementById("greecemap")).ready(function ()
 		}
 		
 		show_legends();
-		mm = new MarkerManager(athmap);
+		mm = new MarkerManager(statsmap);
 		zoomforce = true;
 		mapdragend();
 		zoomforce = false;
 
 		var boundaries = new google.maps.LatLngBounds(new google.maps.LatLng(41.432836,20.420000), new google.maps.LatLng(41.86454,23.126000));
 		var fyromoverlay = new google.maps.GroundOverlay("images/mac04.png", boundaries);
-		fyromoverlay.setMap(athmap);
+		fyromoverlay.setMap(statsmap);
 		
 	  //} //if (GBrowserIsCompatible())
     }
@@ -245,16 +245,16 @@ jQ(document.getElementById("greecemap")).ready(function ()
 			remove_polygons();
 			if (points.length>0)
 			{	
-				show_points(athmap);
+				show_points(statsmap);
 			}
 			if (circles.length>0)
 			{
-				show_circles(athmap);
+				show_circles(statsmap);
 			}
 			if ((infopoint != null) && (infohtml != null))
 			{
 				iw = new google.maps.InfoWindow({position: infopoint, content: infohtml});
-				iw.open(athmap);
+				iw.open(statsmap);
 				infopoint = null;
 				infohtml = null
 			}
@@ -264,7 +264,7 @@ jQ(document.getElementById("greecemap")).ready(function ()
 	
 	function change_connection(i)
 	{
-		athmap.setCenter(points[mypointid[i]][0]);
+		statsmap.setCenter(points[mypointid[i]][0]);
 	}
 	
 	function change_tool(newtool)
@@ -681,11 +681,11 @@ jQ(document.getElementById("greecemap")).ready(function ()
 	
 	function mapdragend()
 	{
-		var thiszoom = athmap.getZoom();
+		var thiszoom = statsmap.getZoom();
         if (!zoomforce && (thiszoom < 8))
             return false;
 		
-		google.maps.event.addListener(athmap, 'idle', function() 
+		google.maps.event.addListener(statsmap, 'idle', function() 
 		{
 				get_new_map_data();
 			});//idle.... former bounds_changed
@@ -695,14 +695,14 @@ jQ(document.getElementById("greecemap")).ready(function ()
 
 	function get_new_map_data()
 	{
-			var bnds = athmap.getBounds();
+			var bnds = statsmap.getBounds();
 			var sw = bnds.getSouthWest();
 			var ne = bnds.getNorthEast();
 			var update = false;
 			curtime = "";
 			curtime = curtime+"Before AJAX ";appendtimestamp();
 			
-			new Ajax.Request('mappoints.php?z='+athmap.getZoom()+'&blt='+sw.lat()+'&blg='+sw.lng()+'&trt='+ne.lat()+'&trg='+ne.lng()+'&wd='+parsedday+'&wh='+parsedtime+'&c='+parsedcontract+'&t='+toolname, { 
+			new Ajax.Request('mappoints.php?z='+statsmap.getZoom()+'&blt='+sw.lat()+'&blg='+sw.lng()+'&trt='+ne.lat()+'&trg='+ne.lng()+'&wd='+parsedday+'&wh='+parsedtime+'&c='+parsedcontract+'&t='+toolname, { 
 				method:'get',
 				onComplete: function(transport, json)
 				{

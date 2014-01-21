@@ -6,8 +6,8 @@ require("parameters.inc.php");
 session_start();
 /*****************************   Language ***********************************/
 $mlablang = 0;
-if (isset($_REQUEST['l']) && in_array($_REQUEST['l'],$languages)
-	$mlablang = $languages($_REQUEST['l']);
+if (isset($_REQUEST['l']) && in_array($_REQUEST['l'],$languages))
+	$mlablang = $_REQUEST['l'];
 elseif (!isset($_REQUEST['l']))
 { 
 	if(isset($_SESSION['mlablang']))
@@ -18,7 +18,7 @@ elseif (!isset($_REQUEST['l']))
 $_SESSION['mlablang'] = $mlablang;
 setcookie('mlablang', $mlablang, time()+60*60*24*30*12);
 
-$lang = in_array($_REQUEST['l'],$mlablang) ? $languages[$mlablang]:$languages[0];
+$lang = $languages[$mlablang];
 require_once("lang/$lang.lang.php");
 require_once("library.lib.php");
 

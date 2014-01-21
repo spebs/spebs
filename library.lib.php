@@ -19,8 +19,6 @@
 **/
 
 
-
-
 /**************************************    DB   Main API  **********************************************/
 
 /**
@@ -334,16 +332,18 @@ function extract_user_data_from_key($key)
 
 function get_user_connection_details($user_id, $conn_id = NULL)
 {
+	global $geographical_divisions;
+	$max_region_level = $geographical_divisions-1;
 	if(is_null($conn_id))
 	{
-		$query = "SELECT street, str_number, postal_code, municipality, m.name_el, isp_id, purchased_bandwidth_dl_kbps, purchased_bandwidth_ul_kbps, c.latitude, c.longitude, c.description, c.status 
-			FROM user_connection uc NATURAL JOIN connection c JOIN municipalities m ON municipality = id WHERE user_id=? AND status=1";
+		$query = "SELECT street, str_number, postal_code, containing_region, m.name_lang0 region, isp_id, purchased_bandwidth_dl_kbps, purchased_bandwidth_ul_kbps, c.latitude, c.longitude, c.description, c.status 
+			FROM user_connection uc NATURAL JOIN connection c JOIN region_level_$max_region_level m ON c.containing_region = m.id WHERE user_id=? AND status=1";
 		$res = execute_prepared_query($query,array($user_id),'i',true);
 	}
 	else
 	{
-		$query = "SELECT street, str_number, postal_code, municipality, m.name_el, isp_id, purchased_bandwidth_dl_kbps, purchased_bandwidth_ul_kbps, c.latitude, c.longitude, c.description, c.status 
-			FROM user_connection uc NATURAL JOIN connection c JOIN municipalities m ON municipality = id WHERE user_id=? AND uc.connection_id=?";
+		$query = "SELECT street, str_number, postal_code, containing_region, m.name_lang0 region, isp_id, purchased_bandwidth_dl_kbps, purchased_bandwidth_ul_kbps, c.latitude, c.longitude, c.description, c.status 
+			FROM user_connection uc NATURAL JOIN connection c JOIN region_level_$max_region_level m ON c.containing_region = m.id WHERE user_id=? AND uc.connection_id=?";
 		$res = execute_prepared_query($query,array($user_id, $conn_id),'ii',true);
 	}
 	if(!empty($res))
@@ -354,8 +354,10 @@ function get_user_connection_details($user_id, $conn_id = NULL)
 
 function get_alluser_connections_details($user_id)
 {
-	$query = "SELECT c.connection_id, street, str_number, postal_code, municipality, m.name_el, isp_id, purchased_bandwidth_dl_kbps, purchased_bandwidth_ul_kbps, c.latitude, c.longitude, c.description, c.status 
-		FROM user_connection uc NATURAL JOIN connection c JOIN municipalities m ON municipality = id WHERE user_id=? AND status>0 ORDER BY status=1 DESC, creation_time";
+	global $geographical_divisions;
+	$max_region_level = $geographical_divisions-1;
+	$query = "SELECT c.connection_id, street, str_number, postal_code, c.containing_region, m.name_lang0 region, isp_id, purchased_bandwidth_dl_kbps, purchased_bandwidth_ul_kbps, c.latitude, c.longitude, c.description, c.status 
+		FROM user_connection uc NATURAL JOIN connection c JOIN region_level_$max_region_level m ON c.containing_region = m.id WHERE user_id=? AND status>0 ORDER BY status=1 DESC, creation_time";
 	$res = execute_prepared_query($query,array($user_id),'i',true);
 	if(!empty($res))
 		return $res;
@@ -365,8 +367,10 @@ function get_alluser_connections_details($user_id)
 
 function get_alluser_connections($user_id)
 {
+	global $geographical_divisions;
+	$max_region_level = $geographical_divisions-1;
 	$query = "SELECT c.connection_id, c.description
-		FROM user_connection uc NATURAL JOIN connection c JOIN municipalities m ON municipality = id WHERE user_id=? AND status>0 ORDER BY status=1 DESC, creation_time";
+		FROM user_connection uc NATURAL JOIN connection c JOIN region_level_$max_region_level m ON c.containing_region = m.id WHERE user_id=? AND status>0 ORDER BY status=1 DESC, creation_time";
 	$res = execute_prepared_query($query,array($user_id),'i',true);
 	if(!empty($res))
 		return $res;
@@ -428,23 +432,23 @@ function getUserLocation($user_id)
 {
 	if(isset($_SESSION['connection_id']))
 	{
-		$query  = "SELECT connection.longitude, connection.latitude, address, postal_code, municipality, prefecture, periphery,peripheries.country 
+		$query  = "SELECT c.longitude, c.latitude, address, postal_code, c.containing_region, m.containing_region, p.containing_region, c.country 
 			FROM user_connection uc
-			NATURAL JOIN connection 
-			JOIN municipalities ON municipality=municipalities.id
-			JOIN prefectures ON prefecture=prefectures.id
-			JOIN peripheries ON periphery=peripheries.id
+			NATURAL JOIN connection c
+			JOIN region_level_2 m ON c.containing_region=m.id
+			JOIN region_level_1 p ON m.containing_region=p.id
+			JOIN region_level_0 pe ON p.containing_region=pe.id
 			WHERE uc.connection_id=?";
 			$parameter = array($_SESSION['connection_id']);
 	}
 	else
 	{
-		$query  = "SELECT connection.longitude, connection.latitude, address, postal_code, municipality, prefecture, periphery,peripheries.country 
+		$query  = "SELECT c.longitude, c.latitude, address, postal_code, c.containing_region, m.containing_region, p.containing_region, c.country 
 			FROM user_connection 
-			NATURAL JOIN connection 
-			JOIN municipalities ON municipality=municipalities.id
-			JOIN prefectures ON prefecture=prefectures.id
-			JOIN peripheries ON periphery=peripheries.id
+			NATURAL JOIN connection c
+			JOIN region_level_2 m ON c.containing_region=m.id
+			JOIN region_level_1 p ON m.containing_region=p.id
+			JOIN region_level_0 pe ON p.containing_region=pe.id
 			WHERE user_id=? AND status=1";
 			$parameter = array($user_id);
 	}
@@ -473,12 +477,12 @@ function get_municipality_code($municipality_name, $postal_code = NULL)
 	$code = NULL;
 	if(is_null($postal_code))
 	{
-		$pquery  = "SELECT id FROM municipalities WHERE name_el = ? OR name_en = ? OR name_el_no_accents = ? OR name_el_gen_caps = ?";
+		$pquery  = "SELECT id FROM region_level_2 WHERE name_lang0 = ? OR name_lang1 = ? OR name_lang0_no_accents = ? OR name_lang0_gen_caps = ?";
 		$res = get_prepared_single_attribute($pquery,array($municipality_name,$municipality_name,$municipality_name,$municipality_name),'ssss');
 	}
 	else
 	{
-		$pquery  = "SELECT id FROM tk t JOIN municipalities m on t.municipality_id=m.id WHERE t.postal_code = ? AND (m.name_el = ? OR m.name_en = ? OR m.name_el_no_accents = ? OR m.name_el_gen_caps = ?)";
+		$pquery  = "SELECT id FROM tk t JOIN region_level_2 m on t.municipality_id=m.id WHERE t.postal_code = ? AND (m.name_lang0 = ? OR m.name_lang1 = ? OR m.name_lang0_no_accents = ? OR m.name_lang0_gen_caps = ?)";
 		$res = get_prepared_single_attribute($pquery,array($postal_code,$municipality_name,$municipality_name,$municipality_name,$municipality_name),'issss');
 	}
 	if(is_array($res))
@@ -564,7 +568,7 @@ function get_field_values_for_user($userid, $connid = NULL)
 	$fv['connections'] = array();
 	for($i=0;$i<count($res);$i++)
 	{
-		list ($c['connection_id'], $c['street'], $c['street_num'], $c['postal_code'], $c['municipality_code'], $c['municipality'],$c['isp'], $bdown, $bup, $c['addrlat'], $c['addrlng'], $c['description'], $c['status']) = array_values($res[$i]);
+		list ($c['connection_id'], $c['street'], $c['street_num'], $c['postal_code'], $c['region_code'], $c['region'],$c['isp'], $bdown, $bup, $c['addrlat'], $c['addrlng'], $c['description'], $c['status']) = array_values($res[$i]);
 		$c['bandwidth'] = which_bandwidth_combination($bup, $bdown);
 		array_push($fv['connections'], $c);
 	}
@@ -755,8 +759,11 @@ function log_ndt_error($message)
 *****/
 function lang_link($l)
 {
-	global $lang_lang, $lang_otherlang, $action;
-	$langindex = ($l+1) % 2;
+	global $lang_lang, $lang_otherlang, $action, $languages;
+	if(is_numeric($l) && $l>0 && $l<count($languages))
+		$langindex = $l;
+	else
+		$langindex = 0;
 	$qstr = preg_replace('/(^|&)(l=\d)($|&)/','',$_SERVER['QUERY_STRING']);
 	
 	//Correct to show login page on lang change right after login. Actually, ignore action=login.
@@ -880,10 +887,10 @@ function adduser($firstname,$lastname,$email,$password, $contact=1,$profile=1)
 }
 
 function addconnection($user_id, $connection_name, $mainconnection, $isp_id, $purchased_bandwidth_dl_kbps, $purchased_bandwidth_ul_kbps,
-	$street, $street_num, $postal_code, $municipality, $country, $longitude, $latitude, $current_connection_id = NULL)
+	$street, $street_num, $postal_code, $region, $country, $longitude, $latitude, $current_connection_id = NULL)
 {
 	global $spebs_db, $lang_connection;
-	$address = "$street $street_num, $postal_code, $municipality";
+	$address = "$street $street_num, $postal_code, $region";
 	
 	//OLD:  deactivate any existing user connections before adding the new one
 	//$pquery = "UPDATE connection set status=-1 WHERE connection_id IN (SELECT connection_id FROM user_connection WHERE user_id=?)";
@@ -899,7 +906,7 @@ function addconnection($user_id, $connection_name, $mainconnection, $isp_id, $pu
 	
 	if (is_null($current_connection_id) || empty($current_connection_id) || $res)
 	{
-		$mid = get_municipality_code(greek_municipality($municipality),$postal_code);
+		$mid = get_municipality_code(greek_municipality($region),$postal_code);
 		
 		if($mainconnection)
 		{
@@ -917,7 +924,7 @@ function addconnection($user_id, $connection_name, $mainconnection, $isp_id, $pu
 		}
 		
 		$query = "INSERT INTO connection (description, isp_id, purchased_bandwidth_dl_kbps, purchased_bandwidth_ul_kbps, street, str_number, address, postal_code, 
-		municipality, country, longitude, latitude, exchange_id, distance_to_exchange, max_bw_ondistance, max_vdslbw_ondistance, creation_time, status) 
+		containing_region, country, longitude, latitude, exchange_id, distance_to_exchange, max_bw_ondistance, max_vdslbw_ondistance, creation_time, status) 
 		VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		
 		$exchange_info = find_exchange($latitude,$longitude);
@@ -943,7 +950,7 @@ function addconnection($user_id, $connection_name, $mainconnection, $isp_id, $pu
 		return false;
 }
 
-function adjust_postal_code_location($pc, $lat, $long,$municipality)
+function adjust_postal_code_location($pc, $lat, $long,$region)
 {
 	$query = "SELECT * FROM postal_codes WHERE code = ? ";
 	$res = execute_prepared_query($query,array($pc),'i',true);
@@ -962,16 +969,16 @@ function adjust_postal_code_location($pc, $lat, $long,$municipality)
 		{
 			$nl = "";
 			$nn = "";
-			$q = "SELECT name_el, name_en FROM tk WHERE postal_code = ?";
+			$q = "SELECT name_lang0, name_lang1 FROM tk WHERE postal_code = ?";
 			$r = execute_prepared_query($q,array($pc),'i',true);
 			if(!empty($r))
 			{
-				$nl = $r[0]['name_el'];
-				$nn = $r[0]['name_en'];
+				$nl = $r[0]['name_lang0'];
+				$nn = $r[0]['name_lang1'];
 			}
-			$query = "INSERT INTO postal_codes (code,longitude,latitude,municipality,occurences, name_el, name_en ) VALUES 
+			$query = "INSERT INTO postal_codes (code,longitude,latitude,containing_region,occurences, name_lang0, name_lang1 ) VALUES 
 					(?,?,?,?,1, ?, ?)";
-			$pars = array($pc,$long,$lat,$municipality,$nl,$nn);
+			$pars = array($pc,$long,$lat,$region,$nl,$nn);
 			$vartypes = 'iddiss';
 		
 		}
@@ -984,9 +991,9 @@ function adjust_postal_code_location($pc, $lat, $long,$municipality)
 }
 
 function update_connection($connection_id, $user_id, $connection_name, $mainconnection, $isp_id, $purchased_bandwidth_dl_kbps, $purchased_bandwidth_ul_kbps,
-	$street, $street_num, $postal_code, $municipality, $country, $longitude, $latitude)
+	$street, $street_num, $postal_code, $region, $country, $longitude, $latitude)
 {
-	$address = "$street $street_num, $postal_code, $municipality";
+	$address = "$street $street_num, $postal_code, $region";
 	
 	if($mainconnection)
 	{
@@ -1009,7 +1016,7 @@ function update_connection($connection_id, $user_id, $connection_name, $mainconn
 	//$connection_id = get_connection_id($user_id);
 	$query = "UPDATE connection SET 
 		description = ?, isp_id = ?, purchased_bandwidth_dl_kbps=?, purchased_bandwidth_ul_kbps=?,
-		street=?, str_number=?, address=?, postal_code=?,municipality='".get_municipality_code($municipality,$postal_code)."', 
+		street=?, str_number=?, address=?, postal_code=?,containing_region='".get_municipality_code($region,$postal_code)."', 
 		country=?, longitude=?, latitude=?, exchange_id=?, distance_to_exchange=?, max_bw_ondistance=?, max_vdslbw_ondistance=?, status=?
 	WHERE connection_id=?";
 	
@@ -1038,7 +1045,7 @@ function register_new_user($details)
 		{	
 			add_log('REGISTER USER ',$user_id);
 			return addconnection($user_id, $details['connectionname'], isset($details['mainconnection']), $details['isp'], $bandwidths[$details['bandwidth']]['d'], $bandwidths[$details['bandwidth']]['u'],
-			$details['street'], $details['street_num'], $details['postal_code'], $details['municipality'], "Ελλάδα",
+			$details['street'], $details['street_num'], $details['postal_code'], $details['region'], "Ελλάδα",
 			$details['addrlng'], $details['addrlat']);
 		}
 	}
@@ -1068,7 +1075,7 @@ function update_user($user_id, $details)
 			if (connection_changed($user_id,$details))
 			{	
 				$new_connid = addconnection($user_id, $details['connectionname'], isset($details['mainconnection']), $details['isp'], $bandwidths[$details['bandwidth']]['d'], $bandwidths[$details['bandwidth']]['u'],
-				$details['street'], $details['street_num'], $details['postal_code'], $details['municipality'], "Ελλάδα",
+				$details['street'], $details['street_num'], $details['postal_code'], $details['region'], "Ελλάδα",
 				$details['addrlng'], $details['addrlat']);
 				if($_SESSION['connection_id'] == $details['connectionid'])
 					$_SESSION['connection_id'] = $new_connid;
@@ -1077,7 +1084,7 @@ function update_user($user_id, $details)
 			else 
 			{	
 				update_connection($details['connectionid'], $user_id, $details['connectionname'], isset($details['mainconnection']), $details['isp'], $bandwidths[$details['bandwidth']]['d'], $bandwidths[$details['bandwidth']]['u'],
-				$details['street'], $details['street_num'], $details['postal_code'], $details['municipality'], "Ελλάδα",
+				$details['street'], $details['street_num'], $details['postal_code'], $details['region'], "Ελλάδα",
 				$details['addrlng'], $details['addrlat']);
 			}
 			return true;
@@ -1086,7 +1093,7 @@ function update_user($user_id, $details)
 		else
 		{
 			$new_connid = addconnection($user_id, $details['connectionname'], isset($details['mainconnection']), $details['isp'], $bandwidths[$details['bandwidth']]['d'], $bandwidths[$details['bandwidth']]['u'],
-			$details['street'], $details['street_num'], $details['postal_code'], $details['municipality'], "Ελλάδα",
+			$details['street'], $details['street_num'], $details['postal_code'], $details['region'], "Ελλάδα",
 			$details['addrlng'], $details['addrlat']);
 		}
 	}
@@ -1096,7 +1103,7 @@ function update_user($user_id, $details)
 		$valid_details['connections'] = array();
 		for($i=0;$i<count($res);$i++)
 		{
-			list ($c['connection_id'], $c['street'], $c['street_num'], $c['postal_code'], $c['municipality_code'], $c['municipality'],$c['isp'], $bdown, $bup, $c['addrlat'], $c['addrlng'], $c['description'], $c['status']) = array_values($res[$i]);
+			list ($c['connection_id'], $c['street'], $c['street_num'], $c['postal_code'], $c['region_code'], $c['region'],$c['isp'], $bdown, $bup, $c['addrlat'], $c['addrlng'], $c['description'], $c['status']) = array_values($res[$i]);
 			$c['bandwidth'] = which_bandwidth_combination($bup, $bdown);
 			array_push($valid_details['connections'], $c);
 		}
@@ -1108,7 +1115,7 @@ function update_user($user_id, $details)
 function connection_changed($user_id,$details)
 {
 	global $bandwidths;
-	$municipality = get_municipality_code($details['municipality'],$details['postal_code']);
+	$region = get_municipality_code($details['region'],$details['postal_code']);
 	
 	$query = "SELECT connection_id FROM connection 
 			WHERE connection_id=?"
@@ -1117,7 +1124,7 @@ function connection_changed($user_id,$details)
 			." AND purchased_bandwidth_ul_kbps=?"
 			." AND street=?"
 			." AND str_number=?"
-			." AND municipality = $municipality"
+			." AND region = $region"
 			." AND status>0";
 	$pars = array($details['connectionid'],$details['isp'],$bandwidths[$details['bandwidth']]['d'],$bandwidths[$details['bandwidth']]['u'],$details['street'],$details['street_num']);
 	$vartypes = 'iiiiss';
@@ -1341,13 +1348,13 @@ function valid_form_data($form_values,$checkrecaptcha=true,$checkpassword=true)
 		$invalid = true;
 		$invalid_fields .= " $lang_street_num";
 	}
-	if (!string_valid(trim($form_values['municipality'])) || !db_valid(greek_municipality(trim($form_values['municipality'])),"name_el",'s',"municipalities"))
+	if (!string_valid(trim($form_values['region'])) || !db_valid(greek_municipality(trim($form_values['region'])),"name_lang0",'s',"region_level_2"))
 	{
-		$form_values['municipality'] = "";
+		$form_values['region'] = "";
 		if ($invalid) 
 			$invalid_fields .= ",";
 		$invalid = true;
-		$invalid_fields .= " $lang_municipality";
+		$invalid_fields .= " $lang_division_names[2]";
 	}
 	elseif(!string_valid(trim($form_values['postal_code'])))
 	{
@@ -1373,7 +1380,7 @@ function valid_form_data($form_values,$checkrecaptcha=true,$checkpassword=true)
 		if ($invalid) 
 			$invalid_fields .= ",";
 		$invalid = true;
-		$invalid_fields .= " $lang_postal_code ($lang_not_matching_municipality {$form_values['municipality']})";
+		$invalid_fields .= " $lang_postal_code ($lang_not_matching_region {$form_values['municipality']})";
 	}
 	if (!db_valid(trim($form_values['isp']),"isp_id",'i',"isp"))
 	{
@@ -1452,7 +1459,7 @@ function db_cross_valid_multiple($value1, $value2, $field1, $field2, $fieldtypes
 
 function greek_municipality($m)
 {
-	$q = "SELECT name_el FROM municipalities WHERE name_el_no_accents = ? OR name_en = ? OR name_el_gen_caps = ? OR name_el = ?";
+	$q = "SELECT name_lang0 FROM municipalities WHERE name_lang0_no_accents = ? OR name_lang1 = ? OR name_lang0_gen_caps = ? OR name_lang0 = ?";
 	return get_prepared_single_value($q,array($m,$m,$m,$m),'ssss');
 }
 

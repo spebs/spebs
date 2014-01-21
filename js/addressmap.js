@@ -17,6 +17,7 @@
  *                        Athanasios Douitsis <A.Douitsis@noc.ntua.gr> 
  *                        Chrysa Papagianni <C.Papagianni@noc.ntua.gr> 
 **/
+var country = "Greece";
 $(document.getElementById("addrlng")).ready(function () 
 {
 	initialize_map();
@@ -27,7 +28,7 @@ $(document.getElementById("postal_code")).ready(function()
 		{
 			extraParams: 
 			{
-				m: $.trim($('#municipality').val())
+				m: $.trim($('#region').val())
 			},
 			minChars: 0,
 			max: 1000,
@@ -40,7 +41,7 @@ $(document.getElementById("postal_code")).ready(function()
 		$.post("autocomplete.php",
 				{
 					pc: $.trim($("#postal_code").val()), 
-					m: $.trim($("#municipality").val())
+					m: $.trim($("#region").val())
 				}, 
 				function(data)
 				{
@@ -50,14 +51,14 @@ $(document.getElementById("postal_code")).ready(function()
 					}
 					else if(!is_empty(data))
 					{
-						$("#municipality").val(data);
+						$("#region").val(data);
 						showInputAddres();
 					}
 				}
 		);
 	});
 	
-	$("#municipality").autocomplete("autocomplete.php",{
+	$("#region").autocomplete("autocomplete.php",{
 		extraParams: {p: function() 
 						{ 
 							return $.trim($("#postal_code").val()); 
@@ -68,18 +69,18 @@ $(document.getElementById("postal_code")).ready(function()
 			cacheLength: 1}
 		);
 	
-	$("#municipality").blur(function()
+	$("#region").blur(function()
 	{
 		$.post("autocomplete.php",
 				{
-					mn: $.trim($("#municipality").val()), 
+					mn: $.trim($("#region").val()), 
 					p: $.trim($("#postal_code").val())
 				}, 
 					function(data)
 					{
 						if(data == "unknown")
 						{
-							$("#municipality").val("");
+							$("#region").val("");
 						}
 						else if(!is_empty(data))
 						{
@@ -104,7 +105,7 @@ $(document.getElementById("postal_code")).ready(function()
 	var areabounds;
 	var mypointid;
 	
-	var grmap;
+	var addressmap;
 	var addressmarker = null;
 	
 	function initialize_map() 
@@ -122,7 +123,7 @@ $(document.getElementById("postal_code")).ready(function()
 						  mapTypeControl: false,
 						  mapTypeId: google.maps.MapTypeId.ROADMAP
 						 };
-		grmap = new google.maps.Map(document.getElementById("greece"), mapOptions);
+		addressmap = new google.maps.Map(document.getElementById("greece"), mapOptions);
         
 		curlat = $.trim(document.getElementById("addrlat").value);
 		curlng = $.trim(document.getElementById("addrlng").value);
@@ -135,10 +136,10 @@ $(document.getElementById("postal_code")).ready(function()
 	{
       //if (GBrowserIsCompatible()) 
 	  //{
-        grmap.setCenter(new google.maps.LatLng(38.30, 23.95));
-		grmap.setZoom(6);
+        addressmap.setCenter(new google.maps.LatLng(38.30, 23.95));
+		addressmap.setZoom(6);
         
-		//grmap.clearOverlays();
+		//addressmap.clearOverlays();
 		if(addressmarker != null)
 			addressmarker.setMap(null);
 		
@@ -160,13 +161,13 @@ $(document.getElementById("postal_code")).ready(function()
 		var street = $.trim(document.getElementById("street").value);
 		var streetno = $.trim(document.getElementById("street_num").value);
 		var pcode = $.trim(document.getElementById("postal_code").value);
-		var municipality = $.trim(document.getElementById("municipality").value);
+		var region = $.trim(document.getElementById("region").value);
 		//if (is_empty(street) || is_empty(streetno) || is_empty(pcode) || is_empty(municipality))
-		if (is_empty(street) ||  is_empty(pcode) || is_empty(municipality))
+		if (is_empty(street) ||  is_empty(pcode) || is_empty(region))
 			return false;
 		
-		var address = street+' '+streetno+','+pcode+','+municipality+', Greece';
-		var alt = pcode+','+municipality+', Greece';
+		var address = street+' '+streetno+','+pcode+','+region+', '+country;
+		var alt = pcode+','+region+', '+country;
 		showAddres(address,alt);
 		if(is_empty($("#addrlat").val()))
 			reset_map();
@@ -197,11 +198,11 @@ $(document.getElementById("postal_code")).ready(function()
 									//place.Point.coordinates[0]);
 				
 				addressmarker.setPosition(point);
-				addressmarker.setMap(grmap);
+				addressmarker.setMap(addressmap);
 				//addressmarker = new GMarker(point,{draggable:true})
-				//grmap.addOverlay(addressmarker);
-				grmap.setCenter(point);
-				grmap.setZoom(15);
+				//addressmap.addOverlay(addressmarker);
+				addressmap.setCenter(point);
+				addressmap.setZoom(15);
 				document.getElementById("addrlat").value = point.lat();
 				document.getElementById("addrlng").value = point.lng();
 		
@@ -228,23 +229,23 @@ $(document.getElementById("postal_code")).ready(function()
 	{
 		addressmarker.setMap(null);
 		addressmarker = new GMarker({position: point, draggable:true})
-		addressmarker.setMap(grmap);
-		grmap.setCenter(point);
-		grmap.setZoom(15);
+		addressmarker.setMap(addressmap);
+		addressmap.setCenter(point);
+		addressmap.setZoom(15);
 		document.getElementById("addrlat").value = point.lat();
 		document.getElementById("addrlng").value = point.lng();
 	}
 	
 	function moveMarker(point)
 	{
-		grmap.setCenter(point);
-		grmap.setZoom(15);
+		addressmap.setCenter(point);
+		addressmap.setZoom(15);
 		addressmarker.setPosition(point);
 		document.getElementById("addrlat").value = point.lat();
 		document.getElementById("addrlng").value = point.lng();
 	}
 	
-	function changeConnection(connid, description, status, street, str_number, postal_code, municipality, addrlat, addrlng, isp, bandwidth)
+	function changeConnection(connid, description, status, street, str_number, postal_code, region, addrlat, addrlng, isp, bandwidth)
 	{
 			$("#connectionid").val(connid);
 			$("#connectionname").val(description);
@@ -255,7 +256,7 @@ $(document.getElementById("postal_code")).ready(function()
 			$("#street").val(street);
 			$("#street_num").val(str_number);
 			$("#postal_code").val(postal_code);
-			$("#municipality").val(municipality);
+			$("#region").val(region);
 			$("#addrlat").val(addrlat);
 			$("#addrlng").val(addrlng);
 			$("#isp").val(isp);
@@ -268,7 +269,7 @@ $(document.getElementById("postal_code")).ready(function()
 			
 			var adjustedPoint = new google.maps.LatLng(addrlat,addrlng);
 			moveMarker(adjustedPoint);
-			addressmarker.setMap(grmap);
+			addressmarker.setMap(addressmap);
 	}
 	
 	function resetConnection()
@@ -279,7 +280,7 @@ $(document.getElementById("postal_code")).ready(function()
 			$("#street").val("");
 			$("#street_num").val("");
 			$("#postal_code").val("");
-			$("#municipality").val("");
+			$("#region").val("");
 			$("#addrlat").val("");
 			$("#addrlng").val("");
 			$("#isp").val("");

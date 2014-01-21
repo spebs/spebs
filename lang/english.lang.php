@@ -106,6 +106,7 @@ $lang_description_notifier_full = "The M-Lab Notifier helps with periodic measur
 $lang_disclaimer = "Disclaimer";
 $lang_disclaimer_message = "SPEBS users are fully responsible for the accuracy of their declared broadband connections' characteristics (i.e. location, downlink/uplink speed, etc.).<br/>* Based on the estimated distance from the Local Exchange.";
 $lang_distance_to_exchange = "Nearest exchange";
+$lang_division_names = array("Periphery", "Prefecture", "Municipality");
 $lang_downspeed_per_isp_title = "Downstream bandwidth per ISP";
 $lang_download = "Download (&darr;)";
 $lang_download_run_mlab_notifier = "Download and run";

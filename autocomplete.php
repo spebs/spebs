@@ -107,12 +107,12 @@ elseif (isset($keyprefix) && isset($p))
 {
 	if($p>0)
 	{
-		$municipalities = "SELECT DISTINCT m.name_".$lang_lang_short." mname FROM tk t JOIN municipalities m on t.municipality_id=m.id WHERE t.postal_code = ? AND (m.name_el like ? OR m.name_en like ?) ORDER BY m.name_".$lang_lang_short."";
+		$municipalities = "SELECT DISTINCT m.name_lang".$mlablang." mname FROM tk t JOIN region_level_{$geographical_divisions-1} m on t.municipality_id=m.id WHERE t.postal_code = ? AND (m.name_lang0 like ? OR m.name_lang1 like ?) ORDER BY m.name_lang".$mlablang."";
 		$res = execute_prepared_query($municipalities,array($p,$likekp,$likekp),'iss',true);
 	}
 	else
 	{
-		$municipalities = "SELECT DISTINCT name_".$lang_lang_short." mname FROM municipalities WHERE name_el like ? OR name_en like ? ORDER BY name_".$lang_lang_short."";
+		$municipalities = "SELECT DISTINCT m.name_lang".$mlablang." mname FROM municipalities WHERE name_lang0 like ? OR name_lang1 like ? ORDER BY name_lang".$mlablang."";
 		$res = execute_prepared_query($municipalities,array($likekp,$likekp),'ss',true);
 	}
 	
@@ -138,7 +138,7 @@ elseif (isset($pc))
 	
 	if($change_municipality)
 	{
-		$municipality_q = "SELECT DISTINCT m.name_".$lang_lang_short." FROM tk JOIN municipalities m ON municipality_id=m.id WHERE postal_code=?";
+		$municipality_q = "SELECT DISTINCT m.name_lang".$mlablang." FROM tk JOIN region_level_{$geographical_divisions-1} m ON municipality_id=m.id WHERE postal_code=?";
 		$m = get_prepared_single_value($municipality_q,array($pc),'i');
 		echo $m;
 		if(empty($m))

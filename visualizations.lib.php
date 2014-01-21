@@ -191,7 +191,7 @@ function show_map($user_id = 0)
 			<div style="clear:both"></div>
 		</div>
 		<div style="clear:both"></div>
-		<div id="greecemap"></div>
+		<div id="statsmap"></div>
 		<div id="maprightside">';
 	//Show ISPs to priviledged users
 	if ($_SESSION['profile'] > 1)
@@ -499,8 +499,28 @@ function generate_map_pins($query,$userconnection,$userlocation,$tool="ndt",$bot
 
 function build_map_aggregated_query($userloc = null, $bottomleft_coor=null,$topright_coor=null,$zoom = 15, $workingDays = -1, $peakHours = -1, $contract = -1, $tool = "ndt")
 {
+	global $geographical_divisions, $geographical_division_zoom_levels, $geographical_division_map_shape;
 	global $min_connections_per_postal_code, $min_connections_per_municipality, $min_connections_per_prefecture, $min_connections_per_periphery, $min_connections_per_country, $sliding_window_in_days;
 	global $lang_lang_short,$lang_postal_code_short, $lang_postal_code_prefix, $lang_periphery_prefix, $lang_prefecture_prefix, $bandwidths;
+	
+	$region_level = -1;
+	if($zoom == 100)
+		$region_level = 1;
+	else
+	{
+		foreach ($geographical_division_zoom_levels as $lev => $z)
+		{
+			if($zoom < $z)
+			{ 
+				$region_level = ($lev == 0)? 0: ($lev-1);
+				break;
+			}
+		}
+	}
+	if($region_level<0)
+		$region_level = 0;
+	$area_mode = $geographical_division_map_shape[$region_level];
+	/*
 	if ($zoom < 8)   //peripheries view (polygons)
 		$granularity = 3;
 	elseif ($zoom < 11)  //prefectures view (polygons)
@@ -514,9 +534,10 @@ function build_map_aggregated_query($userloc = null, $bottomleft_coor=null,$topr
 		$granularity = 2;
 	}	
 	else
-		return null;
-	$areatypes = array("postal_code","municipality","prefecture","periphery","country");
-	$areatables = array("postal_codes","municipalities","prefectures","peripheries","countries");
+		return null;*/
+		
+	$areatypes = array("periphery","prefecture","municipality","postal_code");
+	
 	
 	/**************************************** Build region range clause **********************************************/
 	/*          Either restrict view in a specified window, or show a window of selected zoom around user location   */
@@ -545,9 +566,12 @@ function build_map_aggregated_query($userloc = null, $bottomleft_coor=null,$topr
 	
 	$region_range_where_clause ="";
 	$region_range_join_clause ="";
-	$i=$granularity;
-	$areatype = $areatypes[$granularity];
-	$areatable = $areatables[$granularity];
+	//$i=$granularity;
+	$areatype = $areatypes[$region_level];
+	if($region_level >= $geographical_divisions)
+		$areatable = "postal_codes";
+	else
+		$areatable = "region_level_".$region_level;
 	$areaagregationtable = "aggregation_per_".$areatype;
 	$areaagregationtable .= ($tool == "ndt")? "":"_glasnost";
 	$min_connections_per_area_variable = ($tool == "ndt")? "min_connections_per_$areatype":"min_connections_per_$areatype"."_glasnost";
@@ -556,22 +580,22 @@ function build_map_aggregated_query($userloc = null, $bottomleft_coor=null,$topr
 	$prefix = isset(${"lang_".$areatype."_prefix"})? ${"lang_".$areatype."_prefix"}:"";
 	$areanamecol = "CONCAT('".$prefix."',name_$lang_lang_short)";
 	$idcol = "id";
-	if ($granularity == 0)
+	if ($region_level == 3)
 		$idcol = "code";
 	
 	$contract_filter = (isset($bandwidths[$contract]))? " AND contract = '".$bandwidths[$contract]['d']." ".$bandwidths[$contract]['u']."' ":" AND contract = 'all'";
 	$filter = " workingDay = $workingDays AND peakHour = $peakHours".$contract_filter;
 	
-	if (isset($min_lat) && $granularity<2) // detailed view with boundaries or user location with showing circles around a center and not polygons
+	if (isset($min_lat) && $area_mode=="point") // detailed view with boundaries or user location with showing circles around a center and not polygons
 		$region_range_where_clause ="WHERE a.latitude > $min_lat AND a.latitude < $max_lat AND a.longitude > $min_lng AND a.longitude < $max_lng ";
 
 	//if in prefectures or peripheries zoom level then check possibly multiple polygons (namely prefecture polygons) for intersecting with viewport
-	if ($granularity > 1)
+	if ($region_level < 2)
 	{		
-		$prefecturetype = 2; // i.e. areatype = prefecture: table field for checking overlaps with viewport
+		$prefecturetype = 1; // i.e. areatype = prefecture: table field for checking overlaps with viewport
 		$wc = "WHERE ".$areatype."_id IS NOT NULL";
 		//Show all peripheries no matter what region viewport defines
-		if (isset($min_lat) && $granularity==2)
+		if (isset($min_lat) && $region_level == 1)
 			//old one, replaced by spatial query: $wc .= " AND latitude > $min_lat AND latitude < $max_lat AND longitude > $min_lng AND longitude < $max_lng ";
 			$wc .= " AND Intersects($viewportpolygon, SHAPE) ";
 		
@@ -587,9 +611,6 @@ function build_map_aggregated_query($userloc = null, $bottomleft_coor=null,$topr
 		//$area_query['pols'] = "SELECT id, enc_pol_points as points, enc_pol_levels as levels
 			//			FROM local_exchange_polygons WHERE Intersects($viewportpolygon, SHAPE)";  
 	}
-	$areas = "";
-	for ($j=count($areatypes)-1;$j>$granularity-1;$j--) ///??????????? DO WE NEED THIS????????
-			$areas .= ", {$areatypes[$j]}"; 
 	
 	if ($_SESSION['profile'] > 1)//privileged user level 1 ---> show her isps
 		$order_by_clause = "a.$idcol, isp_id";
@@ -605,7 +626,7 @@ function build_map_aggregated_query($userloc = null, $bottomleft_coor=null,$topr
 		ssh_measurements, connections_with_ssh_measurements, pop_throttled_connections, pop_measurements, connections_with_pop_measurements, imap_throttled_connections,
 		imap_measurements, connections_with_imap_measurements, flash_throttled_connections, flash_measurements, connections_with_flash_measurements";
 		
-	$area_query[] = "SELECT STRAIGHT_JOIN a.$idcol as $areatype, $areanamecol as areaname, latitude, longitude, $granularity category, isp_id, 
+	$area_query[] = "SELECT STRAIGHT_JOIN a.$idcol as $areatype, $areanamecol as areaname, latitude, longitude, $region_level category, isp_id, 
 						$metric_fields,
 						measurements_sum measurements, connections_count connections
 						FROM 
@@ -870,7 +891,7 @@ function show_give_address_map()
 			$conndescr = (empty($conn['description']))? "$lang_connection $i":$conn['description'];
 			$connstat = ($conn['status']==1)? "true":"false";
 			$connselection .= 
-				"<a id=\"conn$i\" href=\"#\" onclick=\"changeConnection({$conn['connection_id']}, '{$conn['description']}', $connstat, '{$conn['street']}', '{$conn['street_num']}', '{$conn['postal_code']}', '{$conn['municipality']}', {$conn['addrlat']}, {$conn['addrlng']}, {$conn['isp']}, {$conn['bandwidth']});return false;\">$conndescr</a>&nbsp;|&nbsp;";
+				"<a id=\"conn$i\" href=\"#\" onclick=\"changeConnection({$conn['connection_id']}, '{$conn['description']}', $connstat, '{$conn['street']}', '{$conn['street_num']}', '{$conn['postal_code']}', '{$conn['region']}', {$conn['addrlat']}, {$conn['addrlng']}, {$conn['isp']}, {$conn['bandwidth']});return false;\">$conndescr</a>&nbsp;|&nbsp;";
 			if(isset($connectionid) && $conn['connection_id'] == $connectionid)
 					$selected_connection = $i;
 			$i++;
@@ -952,7 +973,7 @@ function show_give_address_map()
 				.$lang_municipality.'
 			</div>
 			<div class="forminput">
-				<input class="textbox w15em" name="municipality" id="municipality" type="text" onchange="showInputAddres()" value="'.$municipality.'">
+				<input class="textbox w15em" name="region" id="region" type="text" onchange="showInputAddres()" value="'.$region.'">
 			</div>
 		</div>
 		<div class="formfield" style="height:410px;">
@@ -1129,10 +1150,10 @@ function show_charts($user_id = 39, $connection_ids, $n_measurements = 100)
 	{
 		//First chart: N months to the past
 		$query = build_chart_query($connection_id,false,0,0); 
-		$jsgdata[] = transform2google_data($query, array('datetime','number','number','number','number','number'), 		array("nmupdowndata[$i]","nmrttdata[$i]","nmlossdata[$i]","nmjitterdata[$i]"),array(array(0,1,2),array(0,3),array(0,4),array(0,5)));
+		$jsgdata[] = transform2google_data($query, array('datetime','number','number','number','number','number'), array("nmupdowndata[$i]","nmrttdata[$i]","nmlossdata[$i]","nmjitterdata[$i]"),array(array(0,1,2),array(0,3),array(0,4),array(0,5)));
 		//Last M measurements
 		$query = build_chart_query($connection_id,false,0,$n_measurements); 
-		$jsgdata[] = transform2google_data($query, array('datetime','number','number','number','number','number'), 		array("mmupdowndata[$i]","mmrttdata[$i]","mmlossdata[$i]","mmjitterdata[$i]"),array(array(0,1,2),array(0,3),array(0,4),array(0,5)));	
+		$jsgdata[] = transform2google_data($query, array('datetime','number','number','number','number','number'), array("mmupdowndata[$i]","mmrttdata[$i]","mmlossdata[$i]","mmjitterdata[$i]"),array(array(0,1,2),array(0,3),array(0,4),array(0,5)));	
 	}
 	echo '
 		<script type="text/javascript" src="http://www.google.com/jsapi"></script>
