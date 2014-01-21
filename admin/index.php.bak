@@ -1,0 +1,38 @@
+<?php
+/***
+*
+*
+* Useful info on db data
+*
+*
+***/
+
+include("../init.inc.php");
+if(!isset($_SESSION['profile']) || $_SESSION['profile']<3)
+	die("Go away!");
+?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>SPEBS usage statistics</title>
+</head>
+<body style="font-family:calibri,verdana,sans-serif; font-size:10pt;">
+
+
+<?
+	if(isset($_REQUEST['v']) && $_REQUEST['v'] == 't')
+	{	
+		echo "<a href=\"?v=s\">Στατιστικά μετρήσεων</a>"; 
+		include("traffic.php");
+	}
+	else
+	{	
+		echo "<a href=\"?v=t\">Κίνηση εξυπηρετητών M-Lab και broadbandtest.eett.gr</a>"; 
+		include("stats.php");
+	}
+	
+?>
+</body>
+</html>
+

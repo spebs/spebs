@@ -1,0 +1,97 @@
+<?php
+
+/****  Web Host  **************************************************************/
+
+$relative_path = "yyy/";
+$home = "http://xxxx.xxxx.xxx/$relative_path;
+
+/****  User session  **********************************************************/
+
+$rememberme_duration = 180; //Days before the expiration of remember me cookie 
+
+
+/****  DB  ********************************************************************/
+
+$dbu      = 'dbuser';
+$dbpsw    = 'dbpassword';
+$database = 'databasename';
+$user_stats_aggregation_function = "M"; //Should be one of 'A' for average or 'M' for median, provided that median is an activated udf in mysql
+
+/****  USER ID ENCRYPTION PARAMETERS  *****************************************/
+
+$enc_key    = "hello";
+$enc_phrase = "goodbye";
+
+
+/****  NDT  *******************************************************************/
+
+$naming_server      = 'http://mlab-ns.appspot.com/%s?metro=xxx';
+$ndt_applet_id      = 'SPEBS applet';
+$report_host        = 'xxxx.xxxx.xxx';
+$MAXUPLOAD          = 100;
+$MAXDOWNLOAD        = 100;
+
+
+/****  GLASNOST  **************************************************************/
+
+#$glasnost_server   = "glasnost.xxxx.measurement-lab.org";
+$glasnost_server   =  "glasnost.xxxxx.measurement-lab.org";
+$glasnost_repeat   = 3;
+$glasnost_duration = 20;
+
+$glasnost_applet_archive   = "GlasnostReplayer.jar";
+$glasnost_applet_mac_archive = "GlasnostReplayer.jar";
+
+
+/****  ISP available contracts  ***********************************************/
+
+$bandwidths = array(array('d'=>50000, 'u'=>10000), array('d'=>35000, 'u'=>3000),
+					array('d'=>24000, 'u'=>1000),
+					array('d'=>20000, 'u'=>1000),
+					array('d'=>16000, 'u'=>1000),
+					array('d'=>12000, 'u'=>1000),
+					array('d'=>8000, 'u'=>1000),
+					array('d'=>8000, 'u'=>384),
+					array('d'=>6000, 'u'=>1000),
+					array('d'=>4000, 'u'=>512),
+					array('d'=>4000, 'u'=>256),
+					array('d'=>2000, 'u'=>512),
+					array('d'=>2000, 'u'=>256),
+					array('d'=>1000, 'u'=>256));
+
+
+/****  Thresholds for statistics' presentation  *******************************/
+					
+$min_measurements_per_user = 3;
+$min_glasnostmeasurements_per_user = 0;
+$glasnost_throttles_accepted_percentage = 0.15;
+$glasnost_throttled_connections_accepted_percentage = 0.15;
+$min_connections_per_postal_code   = 1000000;
+$min_connections_per_municipality  = 1000000;
+$min_connections_per_prefecture    = 1000000;
+$min_connections_per_periphery     = 1000000;
+$min_connections_per_country       = 1000000;
+$min_connections_per_postal_code  = 1;
+$min_connections_per_municipality = 1;//20;
+$min_connections_per_prefecture   = 1;//100;
+$min_connections_per_periphery    = 1;//200;
+$min_connections_per_country      = 200;
+$min_connections_per_postal_code_glasnost  = 1;
+$min_connections_per_municipality_glasnost = 1;
+$min_connections_per_prefecture_glasnost   = 1;
+$min_connections_per_periphery_glasnost    = 1;
+$min_connections_per_country_glasnost      = 1;
+$sliding_window_in_days            = 365;
+$max_distance_from_exchange_meters = 6500;
+$max_vdsl_distance_from_exchange_meters = 1500;
+
+/****  Keys for Google maps and Reacptcha  ************************************/
+
+$googleMapsV3Key     = "xxxxxxxxxxxxxxxxxxxx";
+$recaptchaPublicKey  = "xxxxxxxxxxxxxxxxxxxx";
+$recaptchaPrivateKey = "xxxxxxxxxxxxxxxxxxxx";
+	
+
+/************************   Various    ***********************************************/ 
+$automatic_mail_headers = array('from' => "xxxx", 'reply-to' => "xxxxxx");
+?>

@@ -1,0 +1,59 @@
+<?
+include("../init.inc.php");
+
+$vp_lb = null;
+$vp_rt = null;
+$min_lat = null;
+$min_lng = null;
+$max_lat = null;
+$max_lng = null;
+if(isset($_REQUEST['blt']) && isset($_REQUEST['blg']) && isset($_REQUEST['trt']) && isset($_REQUEST['trg']) )
+{
+	if(is_numeric($_REQUEST['blt']) && is_numeric($_REQUEST['blg']) && is_numeric($_REQUEST['trt']) && is_numeric($_REQUEST['trg']) )
+	{
+		$min_lat = $_REQUEST['blt'] - ($_REQUEST['trt']- $_REQUEST['blt'])/5;
+		$min_lng = $_REQUEST['blg'] - ($_REQUEST['trg']- $_REQUEST['blg'])/5;
+		$max_lat = $_REQUEST['trt'] + ($_REQUEST['trt']- $_REQUEST['blt'])/5;
+		$max_lng = $_REQUEST['trg'] + ($_REQUEST['trt']- $_REQUEST['blt'])/5;
+		$vp_lb = array("lat"=>$min_lat,"lng"=>$min_lng);
+		$vp_rt = array("lat"=>$max_lat,"lng"=>$max_lng);
+	}
+}
+
+$viewportpolygon = "GeomFromText('Polygon(($min_lng $min_lat,$min_lng $max_lat,$max_lng $max_lat,$max_lng $min_lat,$min_lng $min_lat))')";
+if(isset($_GET['p']) && isset($_GET['v']))
+	$q_centers = "SELECT id, longitude, latitude, AsText(SHAPE) polygon, polygon_type type FROM local_exchange WHERE Intersects($viewportpolygon, SHAPE)";
+elseif(isset($_GET['v']) && !isset($_GET['p']))
+	$q_centers = ($_GET['v'] == 1) ? "SELECT id, longitude, latitude, AsText(SHAPE) polygon, polygon_type type FROM local_exchange WHERE polygon_type='voronoi' AND Intersects($viewportpolygon, SHAPE)":"SELECT id, longitude, latitude, AsText(SHAPE) polygon, polygon_type type FROM local_exchange_old WHERE polygon_type='voronoi' AND Intersects($viewportpolygon, SHAPE)";
+else//default
+	$q_centers = "SELECT id, longitude, latitude, AsText(SHAPE) polygon, polygon_type type FROM local_exchange WHERE (polygon_type='real' OR polygon_type='real1000m') AND Intersects($viewportpolygon, SHAPE)";
+
+
+
+	
+	$res = execute_query($q_centers);
+	$points = array();
+	$polygons = array();
+	$vpoints = array();
+	$vpolygons = array();
+	
+	while ($row = $res -> fetch_assoc())
+	{	
+		if($row['type'] == 'real')
+		{
+			$points[] = array($row['id'],"new google.maps.LatLng({$row['latitude']},{$row['longitude']})");
+			$polygons[] = array($row['id'],polygonToGPolygon($row['polygon']));
+		}
+		else
+		{
+			$vpoints[] = array($row['id'],"new google.maps.LatLng({$row['latitude']},{$row['longitude']})");
+			$vpolygons[] = array($row['id'],polygonToGPolygon($row['polygon']));
+		}
+		
+	}
+	
+	echo json_encode(array("points" => $points,"polys" => $polygons,"vpoints" => $vpoints,"vpolys" => $vpolygons));
+	
+	
+	
+?>

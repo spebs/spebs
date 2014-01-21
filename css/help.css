@@ -1,0 +1,44 @@
+.title1 {
+	font-family: calibri,verdana,sans-serif;
+	font-size: 15pt;
+	color: #4466bb;
+	font-weight: bold;
+	padding-top: 13pt;
+	padding-bottom: 0pt;
+}
+
+.title2 {
+	font-family: calibri,verdana,sans-serif;
+	font-size: 13pt;
+	color: #4466bb;
+	font-weight: bold;
+	padding-top: 6pt;
+	padding-bottom: 6pt;
+}
+
+.title3 {
+	font-family: calibri,verdana,sans-serif;
+	font-size: 12pt;
+	color: #4466bb;
+	font-weight: bold;
+	padding-top: 6pt;
+	padding-bottom: 6pt;
+}
+
+.paragraph1 {
+	padding-bottom: 6pt;
+}
+
+.help_container {
+	padding-left: 48px;
+	padding-right:  48px;
+}
+
+.help_image {
+	text-align: center;
+	padding: 8px 4px;
+}
+
+ul, ol,li {
+	padding-bottom: 6pt;
+}
