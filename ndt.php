@@ -59,7 +59,16 @@ else
 	$maximum_download = $MAXDOWNLOAD;
 }
 
-
+if( isset($_REQUEST['ndt']) ) {
+	$ndt = $_REQUEST['ndt'];
+	$minimum_java='1.6+';
+	$compatibility_mode = 1;
+}
+else {
+	$ndt = 'ndt';
+	$minimum_java='1.7.0_45+';
+	$compatibility_mode = 0;
+}
 
 ?>
 
@@ -91,6 +100,10 @@ $.ajax({
 })
 .then( 	function(data,textStatus,jqXHR) {
 		console.log('json data from '+naming_service+' downloaded successfully');
+		//if( data === null ) {
+		//	console.log('alert, data is null');
+		//	data = {"city": "Athens", "url": "http://ndt.iupui.mlab3.ath01.measurement-lab.org:7123", "ip": ["83.212.4.37"], "fqdn": "ndt.iupui.mlab3.ath01.measurement-lab.org", "site": "ath01", "country": "GR"} ; 
+		//}
 		return data;
 	},
 	function(jqXHR, textStatus, errorThrown) {
@@ -105,10 +118,24 @@ $.ajax({
 		deployJava.returnPage = location.href;
 
 		//console.log("versioncheck " + deployJava.versionCheck('1.6.0_10+'));
-		if (deployJava.versionCheck('1.5+') == false) {                   
+
+		console.log( 'detected JREs : ' + deployJava.getJREs() ) ;
+
+		if( '<?=$compatibility_mode?>' == 1 ) {
+			$('#warning_box').css('display','block');
+			$('#warning_box').html('<a href="javascript:deployJava.installLatestJRE()"><?= $lang_recommend_java ?></a>');
+		}
+
+		if (deployJava.versionCheck('<?=$minimum_java?>') == false) {
 			//document.write("<p><a href=\"javascript:deployJava.installLatestJRE()\"><?= $lang_need_java ?></a></p>");
 			console.log('old version of java detected');
 			$('#measurement_applet').detach();
+			if( deployJava.getJREs().length > 0 ) {
+				console.log('Will try an older applet and see if it works');
+				if( '<?=$compatibility_mode?>' == 0 ) {
+					setTimeout( function(){  window.location.href = '?ndt=ndt_old' },50);
+				}
+			}
 			$('#ndt').append( '<p><a href="javascript:deployJava.installLatestJRE()"><?= $lang_need_java ?></a></p>' );
 			return $.Deferred().reject('java is too old');
 		}
@@ -136,6 +163,7 @@ function waitAppletLoaded() {
 function pollAppletLoaded(deferred) {
 
         var applet = document.getElementById('measurement_applet');
+	console.log(applet);
                 
         if((applet == null) || (typeof(applet) == "undefined")) {       
                 console.log('applet element is still undefined');
@@ -324,7 +352,7 @@ function test_all_errors() {
 <div id="visualization_container">
 	<h1><?= $lang_new_measurement_with_ndt ?></h1>
 	<div id="ndt" style="text-align:center;margin-top:30px;">
-		<APPLET id="measurement_applet" code="Tcpbw100" MAYSCRIPT="yes" archive="ndt/ndt.jar" width="400" height="200">
+		<APPLET id="measurement_applet" code="Tcpbw100" MAYSCRIPT="yes" archive="ndt/<?= $ndt?>.jar" width="400" height="200">
 			<!-- <?= $disablereport_ndt_param ?> -->
 			<PARAM NAME="disableReport" VALUE="yes_please_disable_the_report"/>
 
@@ -343,8 +371,10 @@ function test_all_errors() {
 			<PARAM NAME="max_down" VALUE="<?= $maximum_download ?>"/>
 
 			<PARAM NAME="cache_option" VALUE="no"/>
+			<PARAM NAME="permissions" VALUE="all-permissions"/>
 		</APPLET>
 		<div id="status_box" style="display:none;"></div>
+		<div id="warning_box" style="display:none;"></div>
 		<div id="message_box" style="height:36px;"></div>
 	</div><!-- ndt -->
 	<div style="clear:both;"/>
