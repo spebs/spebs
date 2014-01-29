@@ -7,7 +7,7 @@
 	<div style="position:relative; width:280; float:left; margin:auto; text-align:right; height:170px; padding-top:50px; line-height:200%">
 		<form action="/<?= $relative_path.'?'.$_SERVER['QUERY_STRING'] ?>" method="post">
 			<label for="username"><?= $lang_email?></label>
-			<input class="textbox w12em" type="text" name ="username" id="username" maxlength="32">
+			<input class="textbox w12em" type="text" name ="username" id="username" maxlength="100">
 			<br/>
 			<label for="password"><?= $lang_password?></label>
 			<input class="textbox w12em" type="password" name="password" id="password" maxlength="32">
