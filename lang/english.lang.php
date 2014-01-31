@@ -997,7 +997,12 @@ Detailed information is available in SPEBS <a target=\"_blank\" href=\"http://br
 <a target=\"_blank\" href=\"http://www.internet2.edu/performance/ndt/\">Network Diagnostic Tool (NDT)</a> and
 <a target=\"_blank\" href=\"http://broadband.mpi-sws.org/transparency/\">Glasnost</a>
 (<a href=\"http://broadband.mpi-sws.org/transparency/results/10_nsdi_glasnost.pdf\">NSDI 2010 paper</a>).";
+$lang_ndt_bw_warn = "<b>Warning:</b> Measured bandwidth exceeds your connection&apos;s headline speed.<br/>Measurement will not be recorded.";
+$lang_ndt_internal_error = "Something went wrong while trying to record the measurement";
+$lang_ndt_measurement_server_out_of_county = "<b>Warning:</b> Measurement server address is out of this country.<br/>This measurement will not be recorded";
+$lang_ndt_successful_submission = "Measurement results successfully recorded!";
 $lang_ndt_try_gls = "You can also perform a measurement using Glasnost!";
+$lang_ndt_user_not_logged_in = "To record your measurements, please signup";
 $lang_need_java = "To use this measurent tool, you need the latest Java(TM) Runtime Environment. Press here to download and install now.";
 $lang_new_account = "Create new account";
 $lang_new_measurement_glasnost = "New measurement with Glasnost";
@@ -1014,7 +1019,7 @@ $lang_not_enough_measurements_for_chart = "You have not performed enough measure
 $lang_not_enough_measurements_for_table = "You have not performed any measurements. Select New Measurement above.";
 $lang_not_enough_measurements_for_this_time_period = "You have not performed any measurements in this time zone selection.";
 $lang_not_greek_ip = "Registration is available only to Greek broadband users. Sorry!";
-$lang_not_matching_municipality = "not corresponding to selected municipality:";
+$lang_not_matching_region = "not corresponding to selected municipality:";
 $lang_otherlang = "greek";
 $lang_outof = "out of";
 $lang_packet_loss = "Packet Loss";
@@ -1134,11 +1139,6 @@ $lang_working = "Mon - Fri";
 $lang_wrong_credentials = "Wrong username/password";
 $lang_wrong_email_format = "Invalid email format";
 
-$lang_ndt_successful_submission = "Measurement results successfully recorded!";
-$lang_ndt_user_not_logged_in = "To record your measurements, please signup";
-$lang_ndt_internal_error = "Something went wrong while trying to record the measurement";
-$lang_ndt_measurement_server_out_of_county = "<b>Warning:</b> Measurement server address is out of this country.<br/>This measurement will not be recorded";
-$lang_ndt_bw_warn = "<b>Warning:</b> Measured bandwidth exceeds your connection&apos;s headline speed.<br/>Measurement will not be recorded.";
 
 
 ?>

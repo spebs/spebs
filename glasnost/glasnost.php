@@ -485,10 +485,10 @@ function start_measurement() {
 
 
 	# Mac gets a special jar (Mac Java needs privileges for select() calls)
+	#$jar = "http://${measurement_server}:19981/GlasnostReplayer.jar";
 	global $glasnost_applet_archive;
 	global $glasnost_applet_mac_archive;
 	$jar = $glasnost_applet_archive;
-	#$jar = "http://${measurement_server}:19981/GlasnostReplayer.jar";
 	if (stripos($_SERVER['HTTP_USER_AGENT'], "mac")){
 		#$jar = "http://${measurement_server}:19981/GlasnostReplayerMac.jar";
 		$jar = $glasnost_applet_mac_archive;

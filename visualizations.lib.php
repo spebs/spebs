@@ -501,7 +501,7 @@ function build_map_aggregated_query($userloc = null, $bottomleft_coor=null,$topr
 {
 	global $geographical_divisions, $geographical_division_zoom_levels, $geographical_division_map_shape;
 	global $min_connections_per_postal_code, $min_connections_per_municipality, $min_connections_per_prefecture, $min_connections_per_periphery, $min_connections_per_country, $sliding_window_in_days;
-	global $lang_lang_short,$lang_postal_code_short, $lang_postal_code_prefix, $lang_periphery_prefix, $lang_prefecture_prefix, $bandwidths;
+	global $lang_lang_short,$mlablang,$lang_postal_code_short, $lang_postal_code_prefix, $lang_periphery_prefix, $lang_prefecture_prefix, $bandwidths;
 	
 	$region_level = -1;
 	if($zoom == 100)
@@ -578,7 +578,7 @@ function build_map_aggregated_query($userloc = null, $bottomleft_coor=null,$topr
 	global $$min_connections_per_area_variable;
 	$min_connections = $$min_connections_per_area_variable;
 	$prefix = isset(${"lang_".$areatype."_prefix"})? ${"lang_".$areatype."_prefix"}:"";
-	$areanamecol = "CONCAT('".$prefix."',name_$lang_lang_short)";
+	$areanamecol = "CONCAT('".$prefix."',name_lang$mlablang)";
 	$idcol = "id";
 	if ($region_level == 3)
 		$idcol = "code";

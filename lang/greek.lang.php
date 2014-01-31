@@ -847,7 +847,7 @@ $lang_new_measurement_with_ndt = "Πραγματοποιήστε μια νέα �
 $lang_news = "Νέα";
 $lang_non_throttled = "ελεύθερη κίνηση";
 $lang_none = "Κανείς";
-$lang_not_matching_municipality = "δεν αντιστοιχεί στον επιλεγμένο δήμο: ";
+$lang_not_matching_region = "δεν αντιστοιχεί στον επιλεγμένο δήμο: ";
 //Change on 28/7/2011: explaining gray polygons
 //$lang_not_enough_data = "Δεν υπάρχουν επαρκή δεδομένα για την περιοχή.";
 $lang_not_enough_data = "<br/>Κατά τη διάρκεια της δοκιμαστικής λειτουργίας της εφαρμογής, τα συγκεντρωτικά στατιστικά ανά περιοχή δε θα είναι διαθέσιμα. Εστιάστε, στην περιοχή ενδιαφέροντος, για να δείτε τα ποιοτικά χαρακτηριστικά των συνδέσεων εγγεγραμμένων χρηστών.";
@@ -1051,7 +1051,12 @@ $lang_ndt_help="<h2>Χρήσιμες Πληροφορίες:</h2>
 	<a target=\"_blank\" href=\"http://www.internet2.edu/performance/ndt/\">Network Diagnostic Tool (NDT)</a>
 	και <a target=\"_blank\" href=\"http://broadband.mpi-sws.org/transparency/\">Glasnost</a>
 (<a href=\"http://broadband.mpi-sws.org/transparency/results/10_nsdi_glasnost.pdf\">NSDI 2010 paper</a>).";
+$lang_ndt_bw_warn = "<b>Προσοχή:</b> Το εύρος ζώνης της μέτρησης ξεπερνά αυτό που έχετε δηλώσει για την σύνδεσή σας.<br/>Η μέτρηση δεν θα καταγραφεί.";
+$lang_ndt_measurement_server_out_of_county = "<b>Προσοχή:</b> Η διεύθυνση του εξυπηρετητή μετρήσεων είναι εκτός της χώρας.<br/>Η μέτρηση δεν θα καταγραφεί. ";
+$lang_ndt_internal_error = "Κάτι πήγε λάθος στην καταγραφή της μέτρησης. ";
+$lang_ndt_successful_submission = "Η μέτρηση καταγράφηκε με επιτυχία!";
 $lang_ndt_try_gls = "Δοκιμάστε να κάνετε μια μέτρηση και με το Glasnost!";
+$lang_ndt_user_not_logged_in = "Για καταγραφή των μετρήσεων, παρακαλούμε κάντε signup";
 $lang_throttle_up = "Παρεμπόδιση αποστολής";
 $lang_throttle_down = "Παρεμπόδιση λήψης";
 $lang_throttled = "μορφοπ. κίνηση";
@@ -1070,12 +1075,5 @@ $lang_weekend = "Σαβ - Κυρ";//"Σαββατοκύριακα";
 $lang_working = "Δευ - Παρ";//"Εργάσιμες";
 $lang_wrong_credentials = "Λάθος στοιχεία";
 $lang_wrong_email_format = "Μη έγκυρη μορφή email";
-
-$lang_ndt_successful_submission = "Η μέτρηση καταγράφηκε με επιτυχία!";
-$lang_ndt_user_not_logged_in = "Για καταγραφή των μετρήσεων, παρακαλούμε κάντε signup";
-$lang_ndt_internal_error = "Κάτι πήγε λάθος στην καταγραφή της μέτρησης. ";
-$lang_ndt_measurement_server_out_of_county = "<b>Προσοχή:</b> Η διεύθυνση του εξυπηρετητή μετρήσεων είναι εκτός της χώρας.<br/>Η μέτρηση δεν θα καταγραφεί. ";
-$lang_ndt_bw_warn = "<b>Προσοχή:</b> Το εύρος ζώνης της μέτρησης ξεπερνά αυτό που έχετε δηλώσει για την σύνδεσή σας.<br/>Η μέτρηση δεν θα καταγραφεί.";
-
 
 ?>

@@ -118,7 +118,10 @@ if ($show_form && isset($field_values))
 	foreach ($field_values AS $key => $val)
 		$$key = $val;
 
-if (!(isset($java_scripts))) $java_scripts = array("js/jquery_latest.js","js/jquery.validate.js","js/spebs.validate.js");
+if (!(isset($java_scripts))) 
+{
+	$java_scripts = array("js/jquery_latest.js","js/jquery.validate.js","js/spebs.validate.js");
+}
 include("header.php");		
 
 if($command == "prohibited")
