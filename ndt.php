@@ -77,7 +77,7 @@ else {
 Raven.config('https://7674b9f5c32e4924837be2cc43f6285c@app.getsentry.com/6922').install();
 </script>
 
-<script src="js/deployJava.js"></script>
+<script type="text/javascript" src="https://www.java.com/js/deployJava.js"></script>
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script src="http://code.jquery.com/jquery-migrate-1.1.1.min.js"></script>
 
