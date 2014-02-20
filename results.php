@@ -31,9 +31,6 @@
 /* change this to 1 to have debug data added to the json response */
 $DEBUG = 1;
 
-//TODO: move this variable to parameters.inc.php
-$acceptable_measurement_server_ip_pattern = '/^83\.212\./';
-
 $hostip = $_SERVER['REMOTE_ADDR'];
 
 # all-inclusive list of allowed POST variables
@@ -259,7 +256,7 @@ if( ! valid_isp() ) {
 }
 
 if( ! preg_match( $acceptable_measurement_server_ip_pattern , $query_variables[ 'ssip' ] ) ) {
-	exit_with(false, 11, 'Sorry, measurement server is out of country');
+	exit_with(false, 11, 'Sorry, measurement server is out of country: '.$query_variables[ 'ssip' ]);
 }
 
 if( $query_variables[ 'upstream_bw' ] > $up_mbps ) {
