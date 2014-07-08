@@ -1472,7 +1472,7 @@ function string_valid($str)
 	//$pattern = "/^[\w\s\xce-\xcf]+$/u";
 	//$pattern = "/^[\w\s]+$/";
 	//$pattern = "/^[\w\sα-ωΑ-Ω]+$/";
-	$pattern = "/^[\w\s\xce84-\xcf8e.,']+$/";
+	$pattern = "/^[\w\s\xce84-\xcf8e.,'-]+$/";
 	//$enc = mb_detect_encoding($str);
 	//echo "<br>string encoding = ".mb_detect_encoding($str)."<br>strlen = ".strlen($str)." mb_strlen = ".mb_strlen($str)."<br>regex encoding = ".mb_regex_encoding()."<br>internal encoding = ".mb_internal_encoding()."<br>";
 	//if (mb_ereg_match($pattern,$str))
