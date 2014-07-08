@@ -1,6 +1,4 @@
 <?php
-//include("../init.inc.php");
-
 $pagetitle = "Στατιστικά χρήσης";
 require("header.php");
 	echo "<h3>General stats</h3>";
@@ -15,12 +13,16 @@ require("header.php");
 	
 	$meas =  get_single_value("SELECT COUNT(*) FROM generic_measurement");
 	$avgmeas = get_single_value("SELECT ROUND(AVG(measurements_count)) FROM aggregation_per_connection where peakHour=-1 and workingDay=-1");
+	$glasnost_meas =  get_single_value("SELECT COUNT(*) FROM glasnost_measurement");
+	$glasnost_avgmeas = get_single_value("SELECT ROUND(AVG(measurements_count)) FROM aggregation_per_connection_glasnost where peakHour=-1 and workingDay=-1");
+	$glasnost_timeperiod_between_two_measurements = get_single_value("SELECT ROUND(AVG(c)) FROM (SELECT TIMESTAMPDIFF(DAY,MIN(created), NOW())/COUNT(*) c from glasnost_measurement GROUP BY connection_id) p");
 	echo "
 			<b>Registered connections:</b> $cons ($cons1 active/$cons0 inactive)<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>With more than $min_measurements_per_user meaurements:</i> $connections_with_enough_measurements (<small>shown on map</small>)<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>With less than $min_measurements_per_user meaurements:</i> $connections_with_few_measurements (<small>not shown on map</small>)<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>With no meaurements:</i> $connections_with_no_measurements (<small>not shown on map</small>)<br/>
-			<b>Measurements conducted:</b> $meas (~$avgmeas per connection shown on map, ~one measurement every $timeperiod_between_two_measurements days per active connection)<br/>
+			<b>NDT measurements:</b> $meas (~$avgmeas per connection shown on map, ~one measurement every $timeperiod_between_two_measurements days per active connection)<br/>
+			<b>Glasnost measurements:</b> $glasnost_meas (~$glasnost_avgmeas per connection shown on map, ~one measurement every $glasnost_timeperiod_between_two_measurements days per active connection)<br/>
 		<hr/>
 		";
 

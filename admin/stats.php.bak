@@ -1,5 +1,9 @@
 <?php
-	echo "<h2>General stats</h2>";
+//include("../init.inc.php");
+
+$pagetitle = "Στατιστικά χρήσης";
+require("header.php");
+	echo "<h3>General stats</h3>";
 	$cons = get_single_value("SELECT COUNT(*) FROM connection WHERE status>-1");
 	$cons0 = get_single_value("SELECT COUNT(*) FROM connection WHERE status=0");
 	$cons1 = get_single_value("SELECT COUNT(*) FROM connection WHERE status=1");
@@ -21,7 +25,7 @@
 		";
 
 	
-	echo "  <h2>Connections per ISP</h2>";
+	echo "  <h3>Connections per ISP</h3>";
 	$vaxis = "";
 	$column_types = array('string','number');
 	$q = "SELECT name, COUNT(*) cons FROM connection c JOIN isp i ON c.isp_id=i.isp_id GROUP BY c.isp_id";
@@ -29,7 +33,7 @@
 	echo "<hr/>";
 
 	
-	echo "  <h2>Connections and measurements per region <br/><small><font color=\"#888888\">(<i>referring to connections with more than 3 measurements</i>)</font></small></h2>";
+	echo "  <h3>Connections and measurements per region <br/><small><font color=\"#888888\">(<i>referring to connections with more than 3 measurements</i>)</font></small></h3>";
 	$vaxis = "";
 	$column_types = array('string','number','number');
 	$q = "SELECT name_el,sum(connections_count) connections,sum(measurements_sum) measurements FROM aggregation_per_periphery a JOIN peripheries p ON a.periphery=p.id WHERE peakHour=-1 AND workingDay=-1 GROUP BY periphery ORDER BY sum(measurements_sum) DESC";
@@ -39,7 +43,7 @@
 	echo "<hr/>";
 	
 
-	echo "  <h2>Connections' distributions per metric<small>(average per connection)</small></h2>";
+	echo "  <h3>Connections' distributions per metric<small>(average per connection)</small></h3>";
 	$column_types = array('string','number');
 	$vaxis = "# of connections";
 	$q = "SELECT round(avgdown,1) pace, count(*) FROM aggregation_per_connection WHERE peakHour=-1 and workingDay=-1 GROUP BY pace";
@@ -54,7 +58,7 @@
 	show_column_chart($q,$column_types,"Jitter",5,$vaxis);
 	echo "<hr/>";
 	
-	echo "  <h2>Measurements' distributions per metric</h2>";
+	echo "  <h3>Measurements' distributions per metric</h3>";
 	$column_types = array('string','number');
 	$vaxis = "# of mesurements";
 	$q = "SELECT round(downstream_bw,1) pace, count(*) FROM generic_measurement GROUP BY pace";
@@ -121,6 +125,8 @@ echo "
 ";
 	
 }
+include("footer.php");
+
 ?>
 
 
