@@ -186,13 +186,21 @@ if( $session[ 'username' ] ) {
 	$connection_id = $session[ 'connection_id' ];
 	$down_mbps = $session[ 'down_mbps' ];
 	$up_mbps = $session[ 'up_mbps' ];	
+	$insert_anonymous = false;
+	#log that a valid user has connected
+	log_ndt_info('User connected to results reporter');
 }
-else {
-	exit_with( false, 4, 'Sorry, but there does not seem to be a valid user session associated with this request. User should be logged in' );
+else {  
+	# there is no valid session, so please set some anonymous values (-1) for the user and connection id
+	# also, bw limits are set to 1000 Gbps, probably enough :) 
+	$insert_anonymous = true;
+	$user_id = -1;
+	$connection_id = -1;
+	$down_mbps = 1000000;
+	$up_mbps = 1000000;
+	log_ndt_info('Anonymous connected to results reporter');
 }
 
-#log that a valid user has connected
-log_ndt_info('User connected to results reporter');
 
 # this is gratuitus, but useful because someone might try to visit this url
 # directly. As a result, this specific error will be shown
@@ -203,6 +211,7 @@ if( count( $_POST )  <= 0 ) {
 
 # we are going to store all our POST values in this array
 $query_variables = array();
+# any unused variables will be placed here for our inspection
 $redundant_variables = array();
 
 # debug scheme
@@ -214,6 +223,7 @@ $debug_data = ( $DEBUG )? array(
 ) : array() ;
 
 $red = array();
+
 # most of the query_variables we will get from the POST request
 foreach ( $_POST as $key => $value) { 
 	# this preg_replace will become unnecessary after I fix the applet
@@ -249,6 +259,13 @@ foreach( $required_keys as $required_key ) {
 	}
 }
 
+# handle anonymous measurements from everywhere 
+if( $insert_anonymous && ( $query_variables[ 'measurement_tool' ] == 'ndt' ) ) { 
+	log_ndt_info('incoming anonymous NDT report');
+	insert_measurement( 'anonymous_web100_measurement' , $var_names ) ; 
+	$query_variables[ 'red' ] = $red;
+	exit_with( false, 4, 'Sorry, but there does not seem to be a valid user session associated with this request. User should be logged in' );
+}
 
 # see if the isp whence the user is coming is valid
 if( ! valid_isp() ) {
@@ -270,21 +287,33 @@ if( $query_variables[ 'measurement_tool' ] == 'ndt' ) {
 
 	log_ndt_info('incoming NDT report');
 
-	$web100_query = 'insert into web100_measurement set '.implode(',',array_map( 'addq', array_keys( $var_names )));
+
+	insert_measurement( 'web100_measurement' , $var_names ) ; 
+		
+	$query_variables[ 'red' ] = $red;
+
+	exit_with( true, 0, 'thank you for your submission, have a nice day!' );
+} 
+else {
+	exit_with( false, 6, 'unknown measurement_tool, sorry, I cannot handle this submission' );
+}
+
+function insert_measurement( $table , $var_names )  { 
+	global $debug_data;
+
+	$web100_query = 'insert into '.$table.' set '.implode(',',array_map( 'addq', array_keys( $var_names )));
 	$web100_values = array_map( 'get_post_var', array_keys( $var_names ) );
 	$web100_types = implode( array_values( $var_names ) );
+
+	// $debug_data[ 'query' ] = array( 'query' => &$web100_query , 'values' => &$web100_values , 'types' => &$web100_types );
 
 	$result = execute_prepared_query( $web100_query, $web100_values, $web100_types, false );
 
 	if(!$result) {
 		exit_with( false, 5, 'Sorry, database query to insert measurement into database failed ' );
 	}
-		
-	$query_variables[ 'red' ] = $red;
-	exit_with( true, 0, 'thank you for your submission, have a nice day!' );
-} 
-else {
-	exit_with( false, 6, 'unknown measurement_tool, sorry, I cannot handle this submission' );
+
+	return true;
 }
 
 function addq($n) { 
@@ -293,7 +322,12 @@ function addq($n) {
 
 function get_post_var($n) { 
 	global $query_variables;
-	return $query_variables[ $n ] ;
+	if ( isset( $query_variables[ $n ] ) ) { 
+		return $query_variables[ $n ] ;
+	}
+	else {	
+		return NULL;
+	}
 }
 
 function exit_with( $success , $errno, $message ) {
